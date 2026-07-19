@@ -66,8 +66,7 @@ if [ -f .env ]; then
     else
       new_clients="$current_clients;$CLIENT_STR"
     fi
-    escaped_new_clients=$(echo "$new_clients" | sed 's/[&/]/\\&/g')
-    sed -i.bak "s|^XRAY_CLIENTS=.*|XRAY_CLIENTS=$escaped_new_clients|" .env && rm -f .env.bak
+    awk -v val="$new_clients" '/^XRAY_CLIENTS=/{sub(/=.*/, "=" val)}1' .env > .env.tmp && mv .env.tmp .env
   else
     echo "XRAY_CLIENTS=$CLIENT_STR" >> .env
   fi

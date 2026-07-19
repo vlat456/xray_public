@@ -1,6 +1,6 @@
 FROM nginx:stable-alpine
 
-RUN apk add --no-cache gettext openssl && \
+RUN apk add --no-cache openssl curl && \
     mkdir -p /etc/nginx/ssl /var/www/html && \
     openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
       -keyout /etc/nginx/ssl/privkey.pem \
