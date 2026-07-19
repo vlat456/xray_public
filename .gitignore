@@ -1,0 +1,3 @@
+# Sensitive — real credentials
+.env
+.env.production

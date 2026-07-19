@@ -1,0 +1,18 @@
+[Unit]
+Description=Xray Reality + Nginx Decoy Stack (Docker Compose)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/xray-stack
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose down
+ExecReload=/usr/bin/docker compose restart
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

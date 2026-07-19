@@ -1,0 +1,63 @@
+services:
+  xray:
+    build: ./xray
+    container_name: xray
+    restart: unless-stopped
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - internal
+    environment:
+      - XRAY_LOG_LEVEL=${XRAY_LOG_LEVEL:-warning}
+      - XRAY_REALITY_DEST=${XRAY_REALITY_DEST:-steamcommunity.com:443}
+      - XRAY_REALITY_SERVER_NAMES=${XRAY_REALITY_SERVER_NAMES:-steamcommunity.com}
+      - XRAY_REALITY_SHORT_IDS=${XRAY_REALITY_SHORT_IDS:-cbdc51eb}
+      - XRAY_REALITY_PRIVATE_KEY=${XRAY_REALITY_PRIVATE_KEY:?required}
+      - XRAY_CLIENTS=${XRAY_CLIENTS:?required}
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: unless-stopped
+    mem_limit: 64m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    environment:
+      - DECOY_DOMAIN=${DECOY_DOMAIN:-example.com}
+      - DECOY_TITLE=${DECOY_TITLE:-Decoy Site}
+      - XRAY_UPSTREAM=xray:10443
+      - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN:-}
+      - NEXTCLOUD_UPSTREAM=${NEXTCLOUD_UPSTREAM:-}
+      - NGINX_HTTP_PORT=${NGINX_HTTP_PORT:-80}
+      - NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT:-443}
+    depends_on:
+      - xray
+    volumes:
+      - "${DECOY_HTML_DIR:-./nginx/html}:/var/www/html"
+      - "${SSL_DIR:-./ssl}:/etc/nginx/ssl:ro"
+
+networks:
+  internal:
+    name: xray-stack_internal
+    driver: bridge

@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copy renewed LE certs to Docker bind mount dir, then graceful reload
+# Replace YOUR_DOMAIN with your actual domain
+cp -L /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem /opt/xray-stack/ssl/fullchain.pem
+cp -L /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem /opt/xray-stack/ssl/privkey.pem
+chown YOUR_USER:YOUR_USER /opt/xray-stack/ssl/*.pem
+
+# Zero-downtime reload — nginx re-reads config + certs, existing conns preserved
+cd /opt/xray-stack && /usr/bin/docker compose exec -T nginx nginx -s reload
