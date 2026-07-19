@@ -1,0 +1,7 @@
+.env
+.git
+.gitignore
+host-setup.sh
+reload-nginx.hook
+xray-stack.service
+INSTALL.md

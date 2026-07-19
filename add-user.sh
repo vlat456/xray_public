@@ -18,7 +18,7 @@ if [ -f .env ]; then
   
   # Helper function to safely read env variables without sourcing
   get_env_var() {
-    grep "^$1=" .env | cut -d= -f2- | sed 's/^"//;s/"$//;s/^\x27//;s/\x27$//'
+    grep "^$1=" .env | sed 's/[[:space:]]*#.*//' | cut -d= -f2- | sed 's/^["\x27]//;s/["\x27]$//' | xargs
   }
   
   XRAY_REALITY_PRIVATE_KEY=$(get_env_var XRAY_REALITY_PRIVATE_KEY)

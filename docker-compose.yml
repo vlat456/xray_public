@@ -20,6 +20,12 @@ services:
       - XRAY_CLIENTS=${XRAY_CLIENTS:?required}
     cap_drop:
       - ALL
+    healthcheck:
+      test: ["CMD", "pgrep", "xray"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   nginx:
     build: ./nginx
@@ -49,7 +55,8 @@ services:
       - NGINX_HTTP_PORT=${NGINX_HTTP_PORT:-80}
       - NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT:-443}
     depends_on:
-      - xray
+      xray:
+        condition: service_healthy
     volumes:
       - "${DECOY_HTML_DIR:-./nginx/html}:/var/www/html"
       - "${SSL_DIR:-./ssl}:/etc/nginx/ssl:ro"
