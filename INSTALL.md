@@ -621,6 +621,25 @@ Docker отслеживает имя файла при `cp`.
 **Решение:** В `.env` строгая схема: `uuid1,email1;uuid2;uuid3,email3`.
 Точка с запятой между клиентами, запятая между UUID и email.
 
+### 18.6. `docker compose restart` не применяет новый .env
+
+**Симптом:** После изменения `DECOY_DOMAIN` (или других переменных) в
+`.env` nginx продолжает использовать старые значения (например,
+`server_name example.com` вместо нового домена).
+
+**Причина:** `docker compose restart` перезапускает контейнер с той же
+конфигурацией. Env vars загружаются при `create`, а не при `start`.
+`restart` не пересоздаёт контейнер.
+
+**Решение:** Использовать `docker compose up -d` вместо `restart`.
+Compose сам определяет изменения и пересоздаёт нужные контейнеры.
+Либо явно: `docker compose up -d --force-recreate nginx`.
+
+Проверить, какие env vars получил контейнер:
+```bash
+docker inspect nginx --format '{{.Config.Env}}'
+```
+
 ---
 
 ## 19. Где смотреть логи
