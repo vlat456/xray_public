@@ -22,9 +22,15 @@ net.core.rmem_max=16777216
 net.core.wmem_max=16777216
 net.ipv4.tcp_rmem=4096 87380 16777216
 net.ipv4.tcp_wmem=4096 65536 16777216
-net.core.somaxconn=4096
+net.core.somaxconn=65535
+net.core.netdev_max_backlog=5000
+net.ipv4.tcp_max_syn_backlog=8192
 net.ipv4.ip_local_port_range=1024 65535
 net.ipv4.tcp_mtu_probing=1
+net.ipv4.tcp_slow_start_after_idle=0
+net.ipv4.tcp_notsent_lowat=131072
+vm.overcommit_memory=1
+vm.swappiness=10
 SYSCTL
 sysctl -p /etc/sysctl.d/90-tune.conf
 
