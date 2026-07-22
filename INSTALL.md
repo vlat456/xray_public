@@ -13,9 +13,9 @@
 ## Что вы получите
 
 ```
-:443 → Nginx (ssl_preread)
-         ├─ ваш-домен → Nginx :1443 (обычный сайт, Let's Encrypt)
-         └─ любой другой SNI → Xray :10443 (Reality, трафик маскируется под TLS)
+VPS :443 → Nginx (ssl_preread)
+          ├─ ваш-домен → Nginx :1443 (обычный сайт, Let's Encrypt)
+          └─ любой другой SNI → Xray :10443 (Reality, трафик маскируется под TLS)
 ```
 
 ---
@@ -76,7 +76,7 @@ cd /opt/xray-stack
 Запустите скрипт подготовки. Он:
 - Включит BBR (алгоритм TCP, ускоряет соединения)
 - Настроит буферы сети
-- Установит Docker и Docker Compose
+- Установит Docker, Docker Compose и python3
 
 ```bash
 sudo ./host_setup.sh
@@ -307,7 +307,8 @@ docker compose logs nginx
 
 ```bash
 # Проверка сайта-приманки (через самоподписанный серт)
-curl -k --resolve example.com:443:127.0.0.1 https://example.com
+# Замените ВАШ_ДОМЕН на ваш DECOY_DOMAIN
+curl -k --resolve ВАШ_ДОМЕН:443:127.0.0.1 https://ВАШ_ДОМЕН
 
 # Проверка SNI-роутинга в Xray
 # Используем SNI отличный от decoy — Nginx направит в Xray
@@ -354,7 +355,7 @@ Let's Encrypt:
 docker compose stop nginx
 
 # Получите сертификат
-sudo certbot certonly --standalone -d example.com
+sudo certbot certonly --standalone -d ВАШ_ДОМЕН
 
 # Запустите nginx обратно
 docker compose start nginx
@@ -364,8 +365,8 @@ docker compose start nginx
 
 ```bash
 # Скопируйте свежие серты
-cp -L /etc/letsencrypt/live/example.com/fullchain.pem ./ssl/fullchain.pem
-cp -L /etc/letsencrypt/live/example.com/privkey.pem ./ssl/privkey.pem
+cp -L /etc/letsencrypt/live/ВАШ_ДОМЕН/fullchain.pem ./ssl/fullchain.pem
+cp -L /etc/letsencrypt/live/ВАШ_ДОМЕН/privkey.pem ./ssl/privkey.pem
 
 # Поправьте права (чтобы контейнер мог читать)
 chmod 644 ./ssl/*.pem
@@ -387,7 +388,7 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 ```
 
 **Важно:** Отредактируйте файл `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`:
-- замените `YOUR_DOMAIN` на ваш домен (например, `example.com`)
+- замените `YOUR_DOMAIN` на ваш домен
 - замените `YOUR_USER` на вашего пользователя (или `root`)
 
 После этого certbot будет при каждом обновлении:
@@ -413,12 +414,12 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 ```
 
 Скрипт:
-1. Определит, что вы в Docker-окружении
+1. Определит что `.env` существует (Docker-окружение)
 2. Сгенерирует новый UUID
 3. Получит публичный ключ из контейнера xray
 4. Добавит клиента в `.env`
 5. Перезапустит xray (на лету, через `docker compose up -d xray`)
-6. Выведет готовую VLESS-ссылку
+6. Выведет VLESS-ссылку и QR-код
 
 Пример вывода:
 
@@ -674,8 +675,8 @@ Docker отслеживает имя файла при `cp`.
 
 **Симптом:** В config.json только 1 клиент.
 
-**Решение:** В `.env` строгая схема: `uuid1,email1;uuid2;uuid3,email3`.
-Точка с запятой между клиентами, запятая между UUID и email.
+**Решение:** В `.env` строгая схема: `uuid1,имя1;uuid2;uuid3,имя3`.
+Точка с запятой между клиентами, запятая между UUID и именем.
 
 ### 18.6. `docker compose restart` не применяет новый .env
 
