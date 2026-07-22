@@ -38,7 +38,7 @@ sysctl -p /etc/sysctl.d/90-tune.conf
 case "$OS" in
   debian|ubuntu)
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl
+    apt-get install -y -qq ca-certificates curl python3
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/$ID/gpg -o /etc/apt/keyrings/docker.asc
     chmod a+r /etc/apt/keyrings/docker.asc
@@ -48,7 +48,7 @@ case "$OS" in
     ;;
 
   rocky|rhel|centos|almalinux)
-    dnf install -y -q dnf-plugins-core
+    dnf install -y -q dnf-plugins-core python3
     dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     dnf install -y -q docker-ce certbot
     systemctl enable --now docker

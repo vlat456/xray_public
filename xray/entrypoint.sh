@@ -17,9 +17,11 @@ done
 unset IFS
 
 # Build serverNames JSON array
+# If XRAY_REALITY_SERVER_NAMES not set, derive from XRAY_REALITY_DEST (strip :port)
+SERVER_NAMES="${XRAY_REALITY_SERVER_NAMES:-$(echo "$XRAY_REALITY_DEST" | sed 's/:.*//')}"
 NAMES_JSON=""
 IFS=','
-for name in $XRAY_REALITY_SERVER_NAMES; do
+for name in $SERVER_NAMES; do
   [ -n "$NAMES_JSON" ] && NAMES_JSON="$NAMES_JSON,"
   NAMES_JSON="$NAMES_JSON\"$(echo "$name" | xargs)\""
 done
