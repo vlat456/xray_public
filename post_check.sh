@@ -343,7 +343,7 @@ fi
 
 header "9. Scripts"
 
-for script in add_user.sh list_users.sh host-setup.sh; do
+for script in add_user.sh list_users.sh host_setup.sh; do
   if [ -f "$script" ]; then
     if [ -x "$script" ]; then
       pass "$script is executable"

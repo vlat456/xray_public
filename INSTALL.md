@@ -79,7 +79,7 @@ cd /opt/xray-stack
 - Установит Docker и Docker Compose
 
 ```bash
-sudo ./host-setup.sh
+sudo ./host_setup.sh
 ```
 
 Скрипт сам определит вашу ОС (Debian, Ubuntu или RHEL-семейство).
@@ -233,7 +233,7 @@ NGINX_HTTP_PORT=80
 NGINX_HTTPS_PORT=443
 ```
 
-Эти порты должен открыть скрипт `host-setup.sh` (он установит Docker,
+Эти порты должен открыть скрипт `host_setup.sh` (он установит Docker,
 но файрвол вам придётся настроить самостоятельно, см. шаг 8).
 
 Порты `80` и `443` нужны для Let's Encrypt (получение сертификата).
