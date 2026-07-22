@@ -280,6 +280,18 @@ nginx     xray-public-nginx   nginx     Up 5 seconds   0.0.0.0:80->80/tcp, 0.0.0
 xray      xray-public-xray    xray      Up 5 seconds   10443/tcp
 ```
 
+### Пост-установочная проверка
+
+Запустите `post_check.sh` — он проверит каждый компонент стека:
+
+```bash
+./post_check.sh
+```
+
+Скрипт проходит 9 секций: prereqs, .env корректность, Docker stack, decoy site,
+Reality, systemd, SSL, безопасность, скрипты. Всё, что подсвечено красным —
+нужно исправить перед использованием.
+
 Ошибки — смотрите логи:
 
 ```bash
@@ -383,6 +395,14 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 1. Копировать новые серты в `/opt/xray-stack/ssl/`
 2. Посылать nginx-у SIGHUP (zero-downtime reload)
 
+### Проверка после настройки LE
+
+Снова запустите `post_check.sh` — он проверит сертификаты, deploy hook и всё остальное:
+
+```bash
+./post_check.sh
+```
+
 ---
 
 ## 10. Добавление пользователей
@@ -404,14 +424,15 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 Пример вывода:
 
 ```
-=== New client ===
-UUID:   7C9EE349-F8CD-4505-ADDE-B7D08543F86C
-username: имя-клиента
+🎉 New client
+  🔑 UUID:     7C9EE349-F8CD-4505-ADDE-B7D08543F86C
+  👤 username: имя-клиента
 
-vless://7C9EE349-...@example.com:443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=BNY0n7L...&sid=cbdc51eb#имя-клиента
+  🔗 VLESS: vless://7C9EE349-...@example.com:443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=BNY0n7L...&sid=cbdc51eb#имя-клиента
+  📱 QR:    https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=vless%3A//...
 ```
 
-Эту ссылку нужно скопировать и импортировать в клиентское приложение:
+VLESS-ссылку или QR-код можно отсканировать/импортировать в клиент:
 - **iPhone:** Streisand, Shadowrocket, V2Box
 - **Android:** v2rayNG, NekoBox, SingBox
 - **Windows:** v2rayN, Nekoray
@@ -432,6 +453,14 @@ vless://7C9EE349-...@example.com:443?type=tcp&security=reality&flow=xtls-rprx-vi
 ```
 
 Каждый раз будет генерироваться новый UUID и новая ссылка.
+
+### Просмотр пользователей
+
+```bash
+./list_users.sh
+```
+
+Показывает UUID, VLESS-ссылку и QR-код для каждого пользователя.
 
 **Важно:** Если вы переустановили стек или потеряли `.env` — старые
 UUID перестанут работать. Храните `.env` в безопасном месте
@@ -492,6 +521,15 @@ docker compose logs xray
 # Логи Nginx
 docker compose logs nginx
 
+# Добавить пользователя
+./add_user.sh "имя"
+
+# Список пользователей (с VLESS + QR)
+./list_users.sh
+
+# Полная проверка установки
+./post_check.sh
+
 # Перезапустить Xray (после добавления пользователя)
 docker compose up -d xray
 
@@ -537,6 +575,12 @@ docker compose logs xray
 Это нормально. Xray внутри контейнера слушает порт 10443.
 Наружу смотрит Nginx на 443. Предупреждение можно игнорировать.
 
+### post_check.sh показывает красные пункты
+
+Запустите снова и читайте подсказки — скрипт пишет что делать для каждого
+конкретного пункта. Если не помогло — проверьте что вы выполнили все шаги
+выше по порядку.
+
 ### Не открывается VLESS-ссылка
 
 Проверьте:
@@ -551,6 +595,10 @@ docker compose logs xray
 
 - **Приватный ключ Reality (`XRAY_REALITY_PRIVATE_KEY`) — это секрет.**
   Храните `.env` в надёжном месте. Никому не отправляйте.
+- **Файл `.env`** должен быть доступен только root:
+  ```bash
+  chmod 600 .env
+  ```
 - **Публичный ключ (`PublicKey`) — не секрет.** Его можно свободно
   распространять клиентам.
 - **UUID клиента — не секрет**, но если клиент перестал пользоваться —
