@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 (2026-07-22)
+
+### Changed
+- `INSTALL.md`: добавлен `post_check.sh` после первого запуска и после LE.
+  Пример вывода `add_user.sh` обновлён (цвета, QR). Добавлен `list_users.sh`
+  в полезные команды. Диагностика: новый пункт про `post_check.sh`.
+  Безопасность: рекомендация `.env` permissions.
+- `post_check.sh`: рекомендация `.env` permissions изменена с `600` на `640`.
+
+### Fixed
+- `INSTALL.md`: `.env` permissions — `600` заменён на `640` с пояснением
+  про владельца файла (иначе `docker compose` не прочитает).
+
 ## 0.2 (2026-07-22)
 
 ### Added
