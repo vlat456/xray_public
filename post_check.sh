@@ -327,7 +327,7 @@ if [ -f .env ]; then
   if [ "$PERMS" = "600" ] || [ "$PERMS" = "400" ]; then
     pass ".env permissions: $PERMS"
   else
-    warn ".env permissions: $PERMS (recommend: chmod 600 .env)"
+    warn ".env permissions: $PERMS (recommend: chmod 640 .env, or 600 if owned by your user)"
   fi
 fi
 
