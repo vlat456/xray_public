@@ -120,8 +120,8 @@ print("OK")
 fi
 
 FLOW_ARG=""
-[ -n "$FLOW" ] && FLOW_ARG="&flow=${FLOW}"
-VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=${TRANSPORT}&security=reality&encryption=none${FLOW_ARG}&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
+[ -n "$FLOW" ] && FLOW_ARG="flow=${FLOW}&"
+VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=${TRANSPORT}&security=reality&${FLOW_ARG}encryption=none&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
 
 QR_URL=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_LINK'))")
 
