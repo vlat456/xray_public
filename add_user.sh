@@ -14,6 +14,7 @@ CONFIG=${CONFIG:-/usr/local/etc/xray/config.json}
 UUID=$(uuidgen 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
 USERNAME="${1:-}"
 FLOW=xtls-rprx-vision
+TRANSPORT=tcp
 
 if [ -f .env ]; then
   echo "[add-user] Dockerized environment detected (.env found)"
@@ -39,6 +40,11 @@ with open('.env') as f:
   NGINX_HTTPS_PORT=$(get_env_var NGINX_HTTPS_PORT)
   XRAY_REALITY_SERVER_NAMES=$(get_env_var XRAY_REALITY_SERVER_NAMES)
   XRAY_REALITY_SHORT_IDS=$(get_env_var XRAY_REALITY_SHORT_IDS)
+  XRAY_NETWORK=$(get_env_var XRAY_NETWORK)
+  if [ "$XRAY_NETWORK" = "xhttp" ]; then
+    TRANSPORT=xhttp
+    FLOW=
+  fi
   
   # Try to get public key using dockerized xray
   PUBLIC_KEY=""
@@ -113,7 +119,9 @@ print("OK")
   systemctl restart xray
 fi
 
-VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=${FLOW}&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
+FLOW_ARG=""
+[ -n "$FLOW" ] && FLOW_ARG="&flow=${FLOW}"
+VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=${TRANSPORT}&security=reality${FLOW_ARG}&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
 
 QR_URL=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_LINK'))")
 

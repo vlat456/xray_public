@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3 (2026-07-23)
+
+### Added
+- XHTTP transport support — `XRAY_NETWORK`, `XRAY_XHTTP_MODE`, `XRAY_XHTTP_PATH` env vars.
+- `entrypoint.sh` conditionally renders `xhttpSettings` or `tcpSettings` based on `XRAY_NETWORK`.
+- `add_user.sh` reads `XRAY_NETWORK`, generates correct `type=xhttp` and omits flow for XHTTP.
+- `docker-compose.yml` passes XHTTP env vars to xray container.
+- `INSTALL.md`: секция 5.8 (XHTTP), таблица клиента TCP vs XHTTP, архитектура с XHTTP, known issue.
+
+### Changed
+- `entrypoint.sh`: flow пустой при `XRAY_NETWORK=xhttp` (несовместим с Vision).
+
 ## 0.2.1 (2026-07-22)
 
 ### Changed

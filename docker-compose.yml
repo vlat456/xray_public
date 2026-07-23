@@ -18,6 +18,9 @@ services:
       - XRAY_REALITY_SHORT_IDS=${XRAY_REALITY_SHORT_IDS:-cbdc51eb}
       - XRAY_REALITY_PRIVATE_KEY=${XRAY_REALITY_PRIVATE_KEY:?required}
       - XRAY_CLIENTS=${XRAY_CLIENTS:?required}
+      - XRAY_NETWORK=${XRAY_NETWORK:-tcp}
+      - XRAY_XHTTP_MODE=${XRAY_XHTTP_MODE:-auto}
+      - XRAY_XHTTP_PATH=${XRAY_XHTTP_PATH:-/}
     cap_drop:
       - ALL
     healthcheck:
