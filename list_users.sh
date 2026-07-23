@@ -72,7 +72,7 @@ port = env.get('NGINX_HTTPS_PORT', '443')
 dest = env.get('XRAY_REALITY_DEST', 'steamcommunity.com:443')
 sni = env.get('XRAY_REALITY_SERVER_NAMES', '') or dest.split(':')[0]
 short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
-sid = short_ids.split(',')[0] if short_ids else 'cbdc51eb'
+sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
 flow = 'xtls-rprx-vision'
 
 GREEN = '\033[0;32m'
@@ -85,6 +85,7 @@ print()
 print(f'{BOLD}{GREEN}📋 Xray Clients{NC}')
 print()
 for i, (uuid, name) in enumerate(clients, 1):
+    sid = sid_list[(i - 1) % len(sid_list)]
     print(f'  {YELLOW}👤{NC} {BOLD}{name}{NC}')
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
