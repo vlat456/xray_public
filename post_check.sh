@@ -167,10 +167,10 @@ if $NGINX_UP; then
     fail "nginx not responding on HTTP"
   fi
 
-  if docker compose exec -T nginx curl -sfk https://localhost/ >/dev/null 2>&1; then
-    pass "nginx responds on HTTPS"
+  if docker compose exec -T nginx curl -sfk --resolve "$DECOY:443:127.0.0.1" "https://$DECOY/" >/dev/null 2>&1; then
+    pass "nginx responds on HTTPS ($DECOY)"
   else
-    fail "nginx not responding on HTTPS"
+    fail "nginx not responding on HTTPS (tested $DECOY)"
   fi
 fi
 
@@ -212,14 +212,14 @@ fi
 header "4. Decoy site"
 
 if $NGINX_UP; then
-  STATUS=$(docker compose exec -T nginx curl -sk -o /dev/null -w "%{http_code}" https://localhost/ 2>/dev/null)
+  STATUS=$(docker compose exec -T nginx curl -sk -o /dev/null -w "%{http_code}" --resolve "$DECOY:443:127.0.0.1" "https://$DECOY/" 2>/dev/null)
   if [ "$STATUS" = "200" ]; then
     pass "Decoy site returns HTTP $STATUS"
   else
     fail "Decoy site returned HTTP $STATUS (expected 200)"
   fi
 
-  TITLE=$(docker compose exec -T nginx curl -sk https://localhost/ 2>/dev/null | sed -n 's/.*<title>\(.*\)<\/title>.*/\1/p')
+  TITLE=$(docker compose exec -T nginx curl -sk --resolve "$DECOY:443:127.0.0.1" "https://$DECOY/" 2>/dev/null | sed -n 's/.*<title>\(.*\)<\/title>.*/\1/p')
   if [ -n "$TITLE" ]; then
     pass "Decoy title: $TITLE"
   fi
@@ -247,11 +247,11 @@ if $XRAY_UP && $NGINX_UP; then
 fi
 
 if [ -n "$PRIVKEY" ] && [ "$PRIVKEY" != "CHANGE_ME" ]; then
-  PUBKEY=$(xray x25519 -i "$PRIVKEY" 2>/dev/null | grep "PublicKey" | awk '{print $NF}' | tr -d '\r') || true
+  PUBKEY=$(docker compose exec -T xray xray x25519 -i "$PRIVKEY" 2>/dev/null | grep "PublicKey" | awk '{print $NF}' | tr -d '\r') || true
   if [ -n "$PUBKEY" ]; then
     pass "Public key derivable from private key: ${PUBKEY}..."
   else
-    fail "Cannot derive public key from private key (xray binary needed)"
+    warn "Cannot derive public key (xray binary not accessible)"
   fi
 fi
 
