@@ -90,7 +90,7 @@ for i, (uuid, name) in enumerate(clients, 1):
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
         fragment = f'#{name}' if name != '-' else ''
-        vless = f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&encryption=none&flow={flow}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{fragment}'
+        vless = f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&flow={flow}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{fragment}'
         qr = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless)
         print(f'    {CYAN}🔗{NC} VLESS: {vless}')
         print(f'    {CYAN}📱{NC} QR:    {qr}')
