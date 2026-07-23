@@ -10,9 +10,23 @@
 ### Docs
 - **INSTALL.md**: добавлены грабли 18.9–18.11 (post_check HTTPS, fwupd память, shortId diversity)
 
+### Added
+- **xray/entrypoint.sh**: поддержка XHTTP (`XRAY_NETWORK=xhttp`), выбор transport через env
+- **docker-compose.yml**: env vars `XRAY_NETWORK`, `XRAY_XHTTP_MODE`, `XRAY_XHTTP_PATH`
+- **update.sh**: скрипт обновления — git pull, сохраняет .env/decoy/ssl, rebuild
+
+### Fixed
+- **list_users.sh**: shortId назначается round-robin, а не один на всех
+- **post_check.sh**: HTTPS тест через `--resolve $DECOY` вместо `localhost` (ложный 400)
+- **post_check.sh**: получение публичного ключа через `docker compose exec xray`
+- **add_user.sh**: XHTTP-aware flow (без flow для xhttp)
+
+### Docs
+- **INSTALL.md**: добавлены грабли 18.9–18.11 (post_check HTTPS, fwupd память, shortId diversity)
+
 ### DevOps
 - **90-tune.conf**: `tcp_slow_start_after_idle=0`, `tcp_notsent_lowat=131072`, `netdev_max_backlog=5000`, `tcp_max_syn_backlog=8192`, `overcommit_memory=1`, `swappiness=10`
-- **host-setup.sh**:синхронизирован с 90-tune.conf (новые sysctl-параметры)
+- **host-setup.sh**: синхронизирован с 90-tune.conf (новые sysctl-параметры)
 - **fwupd**: отключён (жрёт 210MB RAM на Ubuntu 24.04)
 
 ## 2026-07-21
