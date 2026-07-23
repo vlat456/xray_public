@@ -750,6 +750,49 @@ Compose сам определяет изменения и пересоздаёт
 docker inspect nginx --format '{{.Config.Env}}'
 ```
 
+### 18.9. `post_check.sh` HTTPS тест падает с 400
+
+**Симптом:** `post_check.sh` показывает `nginx not responding on HTTPS`
+и `Decoy site returned HTTP 400`.
+
+**Причина:** Внутри контейнера `https://localhost:443` попадает в
+stream-прокси (ssl_preread), а не в HTTP-сервер decoy-сайта (он на
+`:1443`). Stream-блок не знает SNI=localhost и шлёт трафик в xray,
+который возвращает 400.
+
+**Решение:** Скрипт исправлен — использует `--resolve $DECOY:443:127.0.0.1`
+вместо `https://localhost/`. Если правите скрипт сами — не тестируйте
+HTTPS через `localhost`, всегда указывайте домен decoy.
+
+### 18.10. fwupd жрёт 210MB RAM на Ubuntu 24.04
+
+**Симптом:** На VPS с 1GB RAM `fwupd` (firmware update daemon) ест
+~210MB RSS (21% памяти). Со временем появляется swap, падает
+производительность.
+
+**Причина:** Ubuntu 24.04 включает fwupd по умолчанию. На VPS
+firmware-обновления не нужны, но сервис висит и постепенно
+утекает по памяти.
+
+**Решение:** Остановить и замаскировать:
+```bash
+systemctl stop fwupd
+systemctl mask fwupd
+```
+
+### 18.11. `list_users.sh` давал всем клиентам одинаковый shortId
+
+**Симптом:** У всех клиентов в VLESS-ссылке один и тот же `sid`.
+Это не ошибка (Reality работает с любым shortId из списка),
+но снижает diversity трафика.
+
+**Причина:** Скрипт брал первый shortId из `XRAY_REALITY_SHORT_IDS`
+и подставлял его всем клиентам.
+
+**Решение:** Исправлено — shortId назначается round-robin по порядку
+клиентов. Чтобы изменить shortId конкретному клиенту — переставьте
+shortIds в `.env` или удалите лишние.
+
 ---
 
 ## 19. Где смотреть логи
