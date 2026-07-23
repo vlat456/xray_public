@@ -258,6 +258,11 @@ XHTTP даёт:
 указывать пустой flow (или не указывать). `add_user.sh` сам определяет
 XRAY_NETWORK и генерирует правильную VLESS-ссылку.
 
+**XHTTP без Reality не заработает.** Nginx анализирует SNI на основе TLS
+ClientHello. Если `security: "none"` (чистый XHTTP h1/h2c) — TLS-слоя нет,
+nginx не сможет определить SNI и направить трафик. В entrypoint `security: "reality"`
+стоит всегда, поэтому с данным стеком XHTTP работает корректно.
+
 ### 5.9. Директория SSL
 
 Если у вас есть сертификаты Let's Encrypt — укажите путь к папке,
@@ -713,7 +718,20 @@ tcp-транспортом. XHTTP использует HTTP-мультиплек
 правильную ссылку (без flow для XHTTP). Если правите `.env` вручную —
 не указывайте flow клиентам при XHTTP.
 
-### 18.7. `docker compose restart` не применяет новый .env
+### 18.7. XHTTP без Reality не работает через nginx ssl_preread
+
+**Симптом:** При `security: "none"` и `network: "xhttp"` nginx не направляет
+трафик, соединение падает.
+
+**Причина:** nginx использует `ssl_preread` — читает TLS ClientHello, чтобы
+определить SNI и решить, куда направить TCP-stream. Если TLS/Reality нет —
+ClientHello нет, SNI не определить, nginx не знает, кому адресован трафик.
+
+**Решение:** Не выключать `security: "reality"` при использовании XHTTP с
+nginx ssl_preread. В entrypoint `security: "reality"` включён всегда — менять
+не нужно.
+
+### 18.8. `docker compose restart` не применяет новый .env
 
 **Симптом:** После изменения `DECOY_DOMAIN` (или других переменных) в
 `.env` nginx продолжает использовать старые значения (например,

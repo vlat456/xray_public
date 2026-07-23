@@ -7,7 +7,7 @@
 - `entrypoint.sh` conditionally renders `xhttpSettings` or `tcpSettings` based on `XRAY_NETWORK`.
 - `add_user.sh` reads `XRAY_NETWORK`, generates correct `type=xhttp` and omits flow for XHTTP.
 - `docker-compose.yml` passes XHTTP env vars to xray container.
-- `INSTALL.md`: секция 5.8 (XHTTP), таблица клиента TCP vs XHTTP, архитектура с XHTTP, known issue.
+- `INSTALL.md`: секция 5.8 (XHTTP), таблица клиента TCP vs XHTTP, архитектура с XHTTP, known issues 18.6, 18.7.
 
 ### Changed
 - `entrypoint.sh`: flow пустой при `XRAY_NETWORK=xhttp` (несовместим с Vision).
