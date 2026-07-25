@@ -113,8 +113,8 @@ print("OK")
   systemctl restart xray
 fi
 
-VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
-VLESS_XHTTP="vless://${UUID}@${SERVER}:${PORT}?type=xhttp&security=reality&sni=ctldl.windowsupdate.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
+VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}-tcp}"
+VLESS_XHTTP="vless://${UUID}@${SERVER}:${PORT}?type=xhttp&security=reality&sni=ctldl.windowsupdate.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}-xhttp}"
 QR_TCP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_TCP'))")
 QR_XHTTP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_XHTTP'))")
 

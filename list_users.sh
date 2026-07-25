@@ -75,7 +75,7 @@ sni_list = [s.strip() for s in server_names.split(',') if s.strip()]
 short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
 sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
 def build_vless(uuid, name, server, port, transport, sni, pubkey, sid):
-    frag = f'#{name}' if name != '-' else ''
+    frag = f'#{name}-{transport}' if name != '-' else ''
     flow_part = '&flow=xtls-rprx-vision' if transport == 'tcp' else ''
     return f'vless://{uuid}@{server}:{port}?type={transport}&security=reality{flow_part}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
 

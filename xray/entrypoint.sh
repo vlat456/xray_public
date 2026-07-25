@@ -3,16 +3,19 @@ set -e
 
 # Generate xray config from env vars
 CLIENTS_JSON=""
+CLIENTS_JSON_NOFLOW=""
 IFS=';'
 for client in $XRAY_CLIENTS; do
   case "$client" in
     *,*) id="${client%,*}" ; email="${client#*,}" ;;
     *)   id="$client" ; email="" ;;
   esac
-  [ -n "$CLIENTS_JSON" ] && CLIENTS_JSON="$CLIENTS_JSON,"
+  [ -n "$CLIENTS_JSON" ] && CLIENTS_JSON="$CLIENTS_JSON," && CLIENTS_JSON_NOFLOW="$CLIENTS_JSON_NOFLOW,"
   CLIENTS_JSON="$CLIENTS_JSON{\"id\":\"$id\",\"flow\":\"xtls-rprx-vision\""
-  [ -n "$email" ] && CLIENTS_JSON="$CLIENTS_JSON,\"email\":\"$email\""
+  CLIENTS_JSON_NOFLOW="$CLIENTS_JSON_NOFLOW{\"id\":\"$id\""
+  [ -n "$email" ] && CLIENTS_JSON="$CLIENTS_JSON,\"email\":\"$email\"" && CLIENTS_JSON_NOFLOW="$CLIENTS_JSON_NOFLOW,\"email\":\"$email\""
   CLIENTS_JSON="$CLIENTS_JSON}"
+  CLIENTS_JSON_NOFLOW="$CLIENTS_JSON_NOFLOW}"
 done
 unset IFS
 
@@ -39,7 +42,8 @@ unset IFS
 mkdir -p /etc/xray /var/log/xray
 
 # Build config via jq-style heredoc to avoid shell injection
-CLIENTS_JSON="$CLIENTS_JSON" NAMES_JSON="$NAMES_JSON" SIDS_JSON="$SIDS_JSON" \
+CLIENTS_JSON="$CLIENTS_JSON" CLIENTS_JSON_NOFLOW="$CLIENTS_JSON_NOFLOW" \
+  NAMES_JSON="$NAMES_JSON" SIDS_JSON="$SIDS_JSON" \
   XRAY_LOG_LEVEL="$XRAY_LOG_LEVEL" \
   XRAY_REALITY_DEST="$XRAY_REALITY_DEST" \
   XRAY_REALITY_PRIVATE_KEY="$XRAY_REALITY_PRIVATE_KEY" \
@@ -48,9 +52,9 @@ CLIENTS_JSON="$CLIENTS_JSON" NAMES_JSON="$NAMES_JSON" SIDS_JSON="$SIDS_JSON" \
   python3 -c '
 import json, os
 
-def inbound(port, tag, tcp):
+def inbound(port, tag, clients_key):
     s = {
-        "network": "tcp" if tcp else "xhttp",
+        "network": "tcp" if "tcp" in tag else "xhttp",
         "security": "reality",
         "realitySettings": {
             "show": False, "dest": os.environ["XRAY_REALITY_DEST"], "xver": 0,
@@ -60,13 +64,13 @@ def inbound(port, tag, tcp):
         },
         "packetEncoding": "xudp"
     }
-    if tcp:
+    if "tcp" in tag:
         s["tcpSettings"] = {"header": {"type": "none"}}
     else:
         s["xhttpSettings"] = {"mode": os.environ["XRAY_XHTTP_MODE"], "path": os.environ["XRAY_XHTTP_PATH"]}
     return {
         "listen": "0.0.0.0", "port": port, "protocol": "vless", "tag": tag,
-        "settings": {"clients": json.loads("[" + os.environ["CLIENTS_JSON"] + "]"), "decryption": "none"},
+        "settings": {"clients": json.loads("[" + os.environ[clients_key] + "]"), "decryption": "none"},
         "streamSettings": s,
         "sniffing": {"enabled": True, "destOverride": ["http", "tls"]}
     }
@@ -74,8 +78,8 @@ def inbound(port, tag, tcp):
 config = {
     "log": {"loglevel": os.environ["XRAY_LOG_LEVEL"], "access": "/var/log/xray/access.log", "error": "/var/log/xray/error.log"},
     "inbounds": [
-        inbound(10443, "vless-tcp", True),
-        inbound(10444, "vless-xhttp", False)
+        inbound(10443, "vless-tcp", "CLIENTS_JSON"),
+        inbound(10444, "vless-xhttp", "CLIENTS_JSON_NOFLOW")
     ],
     "outbounds": [
         {"protocol": "freedom", "tag": "direct"},
