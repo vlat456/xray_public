@@ -13,8 +13,6 @@ CONFIG=${CONFIG:-/usr/local/etc/xray/config.json}
 
 UUID=$(uuidgen 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
 USERNAME="${1:-}"
-FLOW=xtls-rprx-vision
-TRANSPORT=tcp
 
 if [ -f .env ]; then
   echo "[add-user] Dockerized environment detected (.env found)"
@@ -40,11 +38,7 @@ with open('.env') as f:
   NGINX_HTTPS_PORT=$(get_env_var NGINX_HTTPS_PORT)
   XRAY_REALITY_SERVER_NAMES=$(get_env_var XRAY_REALITY_SERVER_NAMES)
   XRAY_REALITY_SHORT_IDS=$(get_env_var XRAY_REALITY_SHORT_IDS)
-  XRAY_NETWORK=$(get_env_var XRAY_NETWORK)
-  if [ "$XRAY_NETWORK" = "xhttp" ]; then
-    TRANSPORT=xhttp
-    FLOW=
-  fi
+  : # both tcp+xhttp supported
   
   # Try to get public key using dockerized xray
   PUBLIC_KEY=""
@@ -119,11 +113,11 @@ print("OK")
   systemctl restart xray
 fi
 
-FLOW_ARG=""
-[ -n "$FLOW" ] && FLOW_ARG="&flow=${FLOW}"
-VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=${TRANSPORT}&security=reality${FLOW_ARG}&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
-
-QR_URL=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_LINK'))")
+FRAG="${USERNAME:+#${USERNAME}}"
+VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
+VLESS_XHTTP="vless://${UUID}@${SERVER}:${PORT}?type=xhttp&security=reality&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
+QR_TCP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_TCP'))")
+QR_XHTTP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_XHTTP'))")
 
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -135,6 +129,8 @@ printf "${BOLD}${GREEN}🎉 New client${NC}\n"
 printf "  ${CYAN}🔑${NC} UUID:     ${BOLD}%s${NC}\n" "$UUID"
 printf "  ${CYAN}👤${NC} username: ${BOLD}%s${NC}\n" "${USERNAME:-client-$(date +%s)}"
 echo ""
-printf "  ${CYAN}🔗${NC} VLESS: %s\n" "$VLESS_LINK"
-printf "  ${CYAN}📱${NC} QR:    %s\n" "$QR_URL"
+printf "  ${CYAN}🔗${NC} TCP:   %s\n" "$VLESS_TCP"
+printf "  ${CYAN}📱${NC} TCP QR: %s\n" "$QR_TCP"
+printf "  ${CYAN}🔗${NC} XHTTP: %s\n" "$VLESS_XHTTP"
+printf "  ${CYAN}📱${NC} XHTTP QR: %s\n" "$QR_XHTTP"
 echo ""

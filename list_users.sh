@@ -74,8 +74,11 @@ server_names = env.get('XRAY_REALITY_SERVER_NAMES', '') or dest.split(':')[0]
 sni_list = [s.strip() for s in server_names.split(',') if s.strip()]
 short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
 sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
-network = env.get('XRAY_NETWORK', 'tcp')
-flow = 'xtls-rprx-vision' if network == 'tcp' else ''
+# Build links for both transports (tcp + xhttp) when PubKey is available
+def build_vless(uuid, name, server, port, transport, sni, pubkey, sid):
+    frag = f'#{name}' if name != '-' else ''
+    flow_part = '&flow=xtls-rprx-vision' if transport == 'tcp' else ''
+    return f'vless://{uuid}@{server}:{port}?type={transport}&security=reality{flow_part}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
 
 GREEN = '\033[0;32m'
 CYAN = '\033[0;36m'
@@ -92,10 +95,13 @@ for i, (uuid, name) in enumerate(clients, 1):
     print(f'  {YELLOW}👤{NC} {BOLD}{name}{NC}')
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
-        fragment = f'#{name}' if name != '-' else ''
-        vless = f'vless://{uuid}@{server}:{port}?type={network}&security=reality{flow and f"&flow={flow}" or ""}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{fragment}'
-        qr = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless)
-        print(f'    {CYAN}🔗{NC} VLESS: {vless}')
-        print(f'    {CYAN}📱{NC} QR:    {qr}')
+        vless_tcp = build_vless(uuid, name, server, port, 'tcp', sni, pubkey, sid)
+        vless_xhttp = build_vless(uuid, name, server, port, 'xhttp', sni, pubkey, sid)
+        qr_tcp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_tcp)
+        qr_xhttp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_xhttp)
+        print(f'    {CYAN}🔗{NC} TCP:   {vless_tcp}')
+        print(f'    {CYAN}📱{NC} TCP QR: {qr_tcp}')
+        print(f'    {CYAN}🔗{NC} XHTTP: {vless_xhttp}')
+        print(f'    {CYAN}📱{NC} XHTTP QR: {qr_xhttp}')
     print()
 "
