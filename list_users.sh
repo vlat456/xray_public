@@ -96,7 +96,9 @@ for i, (uuid, name) in enumerate(clients, 1):
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
         vless_tcp = build_vless(uuid, name, server, port, 'tcp', 'steamcommunity.com', pubkey, sid)
-        vless_xhttp = build_vless(uuid, name, server, port, 'xhttp', sni, pubkey, sid)
+        xhttp_snis = [x for x in sni_list if x != 'steamcommunity.com']
+        sni_xhttp = xhttp_snis[(i - 1) % len(xhttp_snis)]
+        vless_xhttp = build_vless(uuid, name, server, port, 'xhttp', sni_xhttp, pubkey, sid)
         qr_tcp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_tcp)
         qr_xhttp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_xhttp)
         print(f'    {CYAN}🔗{NC} TCP:   {vless_tcp}')
