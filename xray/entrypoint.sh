@@ -48,39 +48,35 @@ CLIENTS_JSON="$CLIENTS_JSON" NAMES_JSON="$NAMES_JSON" SIDS_JSON="$SIDS_JSON" \
   python3 -c '
 import json, os
 
-stream_settings = {
-    "network": "tcp",
-    "security": "reality",
-    "realitySettings": {
-        "show": False,
-        "dest": os.environ["XRAY_REALITY_DEST"],
-        "xver": 0,
-        "serverNames": json.loads("[" + os.environ["NAMES_JSON"] + "]"),
-        "privateKey": os.environ["XRAY_REALITY_PRIVATE_KEY"],
-        "shortIds": json.loads("[" + os.environ["SIDS_JSON"] + "]")
-    },
-    "tcpSettings": {"header": {"type": "none"}},
-    "packetEncoding": "xudp"
-}
+def inbound(port, tag, tcp):
+    s = {
+        "network": "tcp" if tcp else "xhttp",
+        "security": "reality",
+        "realitySettings": {
+            "show": False, "dest": os.environ["XRAY_REALITY_DEST"], "xver": 0,
+            "serverNames": json.loads("[" + os.environ["NAMES_JSON"] + "]"),
+            "privateKey": os.environ["XRAY_REALITY_PRIVATE_KEY"],
+            "shortIds": json.loads("[" + os.environ["SIDS_JSON"] + "]")
+        },
+        "packetEncoding": "xudp"
+    }
+    if tcp:
+        s["tcpSettings"] = {"header": {"type": "none"}}
+    else:
+        s["xhttpSettings"] = {"mode": os.environ["XRAY_XHTTP_MODE"], "path": os.environ["XRAY_XHTTP_PATH"]}
+    return {
+        "listen": "0.0.0.0", "port": port, "protocol": "vless", "tag": tag,
+        "settings": {"clients": json.loads("[" + os.environ["CLIENTS_JSON"] + "]"), "decryption": "none"},
+        "streamSettings": s,
+        "sniffing": {"enabled": True, "destOverride": ["http", "tls"]}
+    }
 
 config = {
-    "log": {
-        "loglevel": os.environ["XRAY_LOG_LEVEL"],
-        "access": "/var/log/xray/access.log",
-        "error": "/var/log/xray/error.log"
-    },
-    "inbounds": [{
-        "listen": "0.0.0.0",
-        "port": 10443,
-        "protocol": "vless",
-        "tag": "vless-in",
-        "settings": {
-            "clients": json.loads("[" + os.environ["CLIENTS_JSON"] + "]"),
-            "decryption": "none"
-        },
-        "streamSettings": stream_settings,
-        "sniffing": {"enabled": True, "destOverride": ["http", "tls"]}
-    }],
+    "log": {"loglevel": os.environ["XRAY_LOG_LEVEL"], "access": "/var/log/xray/access.log", "error": "/var/log/xray/error.log"},
+    "inbounds": [
+        inbound(10443, "vless-tcp", True),
+        inbound(10444, "vless-xhttp", False)
+    ],
     "outbounds": [
         {"protocol": "freedom", "tag": "direct"},
         {"protocol": "blackhole", "tag": "block"}
