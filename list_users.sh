@@ -78,7 +78,7 @@ def build_vless(uuid, name, server, port, transport, sni, pubkey, sid):
     frag = f'#{name}-{transport}' if name != '-' else ''
     if transport == 'tcp':
         return f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&flow=xtls-rprx-vision&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
-    return f'vless://{uuid}@{server}:{port}?type=xhttp&security=reality&flow=none&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
+    return f'vless://{uuid}@{server}:{port}?type=xhttp&security=reality&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
 
 GREEN = '\033[0;32m'
 CYAN = '\033[0;36m'
