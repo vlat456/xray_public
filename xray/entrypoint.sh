@@ -49,6 +49,23 @@ CLIENTS_JSON="$CLIENTS_JSON" NAMES_JSON="$NAMES_JSON" SIDS_JSON="$SIDS_JSON" \
 import json, os
 
 def inbound(port, tag, transport_settings):
+    s = {
+        "network": "tcp" if transport_settings else "xhttp",
+        "security": "reality",
+        "realitySettings": {
+            "show": False,
+            "dest": os.environ["XRAY_REALITY_DEST"],
+            "xver": 0,
+            "serverNames": json.loads("[" + os.environ["NAMES_JSON"] + "]"),
+            "privateKey": os.environ["XRAY_REALITY_PRIVATE_KEY"],
+            "shortIds": json.loads("[" + os.environ["SIDS_JSON"] + "]")
+        },
+        "packetEncoding": "xudp"
+    }
+    if transport_settings:
+        s["tcpSettings"] = {"header": {"type": "none"}}
+    else:
+        s["xhttpSettings"] = {"mode": os.environ["XRAY_XHTTP_MODE"], "path": os.environ["XRAY_XHTTP_PATH"]}
     return {
         "listen": "0.0.0.0",
         "port": port,
@@ -58,20 +75,7 @@ def inbound(port, tag, transport_settings):
             "clients": json.loads("[" + os.environ["CLIENTS_JSON"] + "]"),
             "decryption": "none"
         },
-        "streamSettings": {
-            "network": "tcp" if transport_settings else "xhttp",
-            "security": "reality",
-            "realitySettings": {
-                "show": False,
-                "dest": os.environ["XRAY_REALITY_DEST"],
-                "xver": 0,
-                "serverNames": json.loads("[" + os.environ["NAMES_JSON"] + "]"),
-                "privateKey": os.environ["XRAY_REALITY_PRIVATE_KEY"],
-                "shortIds": json.loads("[" + os.environ["SIDS_JSON"] + "]")
-            },
-            **({"tcpSettings": {"header": {"type": "none"}}, "packetEncoding": "xudp"} if transport_settings else {}),
-            **({"xhttpSettings": {"mode": os.environ["XRAY_XHTTP_MODE"], "path": os.environ["XRAY_XHTTP_PATH"]}} if not transport_settings else {})
-        },
+        "streamSettings": s,
         "sniffing": {"enabled": True, "destOverride": ["http", "tls"]}
     }
 
