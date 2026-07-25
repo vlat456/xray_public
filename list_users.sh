@@ -74,11 +74,9 @@ server_names = env.get('XRAY_REALITY_SERVER_NAMES', '') or dest.split(':')[0]
 sni_list = [s.strip() for s in server_names.split(',') if s.strip()]
 short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
 sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
-# Build links for both transports (tcp + xhttp) when PubKey is available
-def build_vless(uuid, name, server, port, transport, sni, pubkey, sid):
+def build_vless(uuid, name, server, port, sni, pubkey, sid):
     frag = f'#{name}' if name != '-' else ''
-    flow_part = '&flow=xtls-rprx-vision' if transport == 'tcp' else ''
-    return f'vless://{uuid}@{server}:{port}?type={transport}&security=reality{flow_part}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
+    return f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&flow=xtls-rprx-vision&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
 
 GREEN = '\033[0;32m'
 CYAN = '\033[0;36m'
@@ -95,15 +93,9 @@ for i, (uuid, name) in enumerate(clients, 1):
     print(f'  {YELLOW}👤{NC} {BOLD}{name}{NC}')
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
-        vless_tcp = build_vless(uuid, name, server, port, 'tcp', 'steamcommunity.com', pubkey, sid)
-        xhttp_snis = [x for x in sni_list if x != 'steamcommunity.com']
-        sni_xhttp = xhttp_snis[(i - 1) % len(xhttp_snis)]
-        vless_xhttp = build_vless(uuid, name, server, port, 'xhttp', sni_xhttp, pubkey, sid)
-        qr_tcp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_tcp)
-        qr_xhttp = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless_xhttp)
-        print(f'    {CYAN}🔗{NC} TCP:   {vless_tcp}')
-        print(f'    {CYAN}📱{NC} TCP QR: {qr_tcp}')
-        print(f'    {CYAN}🔗{NC} XHTTP: {vless_xhttp}')
-        print(f'    {CYAN}📱{NC} XHTTP QR: {qr_xhttp}')
+        vless = build_vless(uuid, name, server, port, 'steamcommunity.com', pubkey, sid)
+        qr = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless)
+        print(f'    {CYAN}🔗{NC} VLESS: {vless}')
+        print(f'    {CYAN}📱{NC} QR:    {qr}')
     print()
 "

@@ -113,11 +113,8 @@ print("OK")
   systemctl restart xray
 fi
 
-FRAG="${USERNAME:+#${USERNAME}}"
-VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
-VLESS_XHTTP="vless://${UUID}@${SERVER}:${PORT}?type=xhttp&security=reality&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
-QR_TCP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_TCP'))")
-QR_XHTTP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_XHTTP'))")
+VLESS_LINK="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${USERNAME:+#${USERNAME}}"
+QR_URL=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_LINK'))")
 
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -129,8 +126,6 @@ printf "${BOLD}${GREEN}🎉 New client${NC}\n"
 printf "  ${CYAN}🔑${NC} UUID:     ${BOLD}%s${NC}\n" "$UUID"
 printf "  ${CYAN}👤${NC} username: ${BOLD}%s${NC}\n" "${USERNAME:-client-$(date +%s)}"
 echo ""
-printf "  ${CYAN}🔗${NC} TCP:   %s\n" "$VLESS_TCP"
-printf "  ${CYAN}📱${NC} TCP QR: %s\n" "$QR_TCP"
-printf "  ${CYAN}🔗${NC} XHTTP: %s\n" "$VLESS_XHTTP"
-printf "  ${CYAN}📱${NC} XHTTP QR: %s\n" "$QR_XHTTP"
+printf "  ${CYAN}🔗${NC} VLESS: %s\n" "$VLESS_LINK"
+printf "  ${CYAN}📱${NC} QR:    %s\n" "$QR_URL"
 echo ""
