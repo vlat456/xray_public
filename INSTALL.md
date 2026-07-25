@@ -261,7 +261,7 @@ XHTTP даёт:
 - Работает поверх Reality (маскировка сохраняется)
 
 **Важно:** XHTTP несовместим с `flow: xtls-rprx-vision`. Для XHTTP-ссылок
-flow не указывается. `list_users.sh` и `add_user.sh` сами генерируют
+указывается `flow=none`. `list_users.sh` и `add_user.sh` сами генерируют
 правильные ссылки для обоих транспортов.
 
 **XHTTP без Reality не заработает.** Nginx анализирует SNI на основе TLS
@@ -495,10 +495,9 @@ VLESS-ссылку или QR-код можно отсканировать/имп
 Показывает UUID, VLESS-ссылку и QR-код для каждого пользователя.
 
 Параметры распределяются автоматически:
+- **TCP ссылка** — `type=tcp&flow=xtls-rprx-vision&sni=steamcommunity.com` (ngnix → TCP inbound)
+- **XHTTP ссылка** — `type=xhttp&flow=none&sni=cdn.api.cloud.yandex.net` (nginx → XHTTP inbound)
 - **shortId** — по кругу из `XRAY_REALITY_SHORT_IDS` (у каждого клиента свой)
-- **SNI** — по кругу из `XRAY_REALITY_SERVER_NAMES` (у каждого клиента свой)
-- **transport** — из `XRAY_NETWORK` (tcp или xhttp)
-- **flow** — `xtls-rprx-vision` только для tcp (для xhttp пусто)
 
 **Важно:** Если вы переустановили стек или потеряли `.env` — старые
 UUID перестанут работать. Храните `.env` в безопасном месте

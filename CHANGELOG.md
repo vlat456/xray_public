@@ -1,33 +1,25 @@
 # Changelog
 
-## 2026-07-23
-
-### Fixed
-- **list_users.sh**: shortId назначается round-robin, а не один на всех
-- **post_check.sh**: HTTPS тест через `--resolve $DECOY` вместо `localhost` (ложный 400)
-- **post_check.sh**: получение публичного ключа через `docker compose exec xray`
-
-### Docs
-- **INSTALL.md**: добавлены грабли 18.9–18.11 (post_check HTTPS, fwupd память, shortId diversity)
+## 2026-07-25
 
 ### Added
-- **xray/entrypoint.sh**: dual inbound — TCP (10443) + XHTTP (10444), общие realitySettings
+- **xray/entrypoint.sh**: dual inbound — TCP (10443, flow=vision) + XHTTP (10444, no flow)
 - **nginx/entrypoint.sh**: маршрутизация по SNI: steamcommunity.com → TCP, остальные → XHTTP
-- **docker-compose.yml**: env vars `XRAY_XHTTP_UPSTREAM`, `XRAY_TCP_SNI`, `XRAY_XHTTP_MODE`, `XRAY_XHTTP_PATH`
 - **update.sh**: скрипт обновления — git pull, сохраняет .env/decoy/ssl, rebuild
+- **list_users.sh**: генерация обеих ссылок (TCP + XHTTP) с `flow=none` для XHTTP
+- **add_user.sh**: генерация обеих ссылок, фрагмент `#name-tcp` / `#name-xhttp`
 
 ### Fixed
-- **list_users.sh**: shortId + SNI назначаются round-robin, transport из XRAY_NETWORK
+- **list_users.sh**: XHTTP SNI = `cdn.api.cloud.yandex.net`, TCP SNI = `steamcommunity.com`
+- **xray/entrypoint.sh**: XHTTP inbound без `flow` у клиентов (Vision несовместим)
 - **post_check.sh**: HTTPS тест через `--resolve $DECOY` вместо `localhost` (ложный 400)
 - **post_check.sh**: получение публичного ключа через `docker compose exec xray`
-- **add_user.sh**: XHTTP-aware flow (без flow для xhttp)
 
 ### Docs
-- **INSTALL.md**: добавлены грабли 18.9–18.11 (post_check HTTPS, fwupd память, shortId diversity)
+- **INSTALL.md**: dual transport, flow=none, фрагменты -tcp/-xhttp
 
 ### DevOps
 - **90-tune.conf**: `tcp_slow_start_after_idle=0`, `tcp_notsent_lowat=131072`, `netdev_max_backlog=5000`, `tcp_max_syn_backlog=8192`, `overcommit_memory=1`, `swappiness=10`
-- **host-setup.sh**: синхронизирован с 90-tune.conf (новые sysctl-параметры)
 - **fwupd**: отключён (жрёт 210MB RAM на Ubuntu 24.04)
 
 ## 2026-07-21
