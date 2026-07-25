@@ -237,31 +237,37 @@ NGINX_HTTPS_PORT=443
 
 Порты `80` и `443` нужны для Let's Encrypt (получение сертификата).
 
-### 5.8. Транспорт: TCP или XHTTP
+### 5.8. Транспорт: TCP + XHTTP (одновременно)
 
-По умолчанию Xray использует транспорт TCP. Можно включить **XHTTP** —
-мультиплексированный транспорт поверх HTTP/1.1 и H2C:
+Стек поддерживает два транспорта одновременно — **TCP** и **XHTTP**
+(мультиплексированный транспорт поверх HTTP/1.1 и H2C). Каждому клиенту
+генерируются две VLESS-ссылки: одна для TCP, другая для XHTTP.
 
 ```
-# XRAY_NETWORK=tcp     # TCP (по умолчанию)
-# XRAY_NETWORK=xhttp   # XHTTP (мультиплексирование)
-# XRAY_XHTTP_MODE=auto # auto | h1 | h2
-# XRAY_XHTTP_PATH=/    # path prefix
+XRAY_XHTTP_MODE=auto # auto | h1 | h2
+XRAY_XHTTP_PATH=/    # path prefix
 ```
+
+Как работает:
+- **xray** слушает два inbounds: TCP (10443) и XHTTP (10444)
+- **nginx** по SNI направляет: `steamcommunity.com` → TCP inbound,
+  остальные SNI (`cdn.api.cloud.yandex.net`, `yastatic.net` и т.д.) → XHTTP inbound
+- TCP в ссылке всегда использует `sni=steamcommunity.com` (для Windows Update
+  и совместимости). XHTTP — уникальный SNI из `XRAY_REALITY_SERVER_NAMES`
 
 XHTTP даёт:
 - Мультиплексирование потоков поверх одного TCP-соединения (как gRPC/QUIC)
 - Меньше overhead при большом числе одновременных подключений
 - Работает поверх Reality (маскировка сохраняется)
 
-**Важно:** XHTTP несовместим с `flow: xtls-rprx-vision`. Клиентам нужно
-указывать пустой flow (или не указывать). `add_user.sh` сам определяет
-XRAY_NETWORK и генерирует правильную VLESS-ссылку.
+**Важно:** XHTTP несовместим с `flow: xtls-rprx-vision`. Для XHTTP-ссылок
+flow не указывается. `list_users.sh` и `add_user.sh` сами генерируют
+правильные ссылки для обоих транспортов.
 
 **XHTTP без Reality не заработает.** Nginx анализирует SNI на основе TLS
 ClientHello. Если `security: "none"` (чистый XHTTP h1/h2c) — TLS-слоя нет,
-nginx не сможет определить SNI и направить трафик. В entrypoint `security: "reality"`
-стоит всегда, поэтому с данным стеком XHTTP работает корректно.
+nginx не сможет определить SNI. В entrypoint `security: "reality"` стоит
+всегда, поэтому XHTTP работает корректно.
 
 ### 5.9. Директория SSL
 
@@ -743,9 +749,9 @@ Docker отслеживает имя файла при `cp`.
 tcp-транспортом. XHTTP использует HTTP-мультиплексирование, где Vision
 неприменим.
 
-**Решение:** `add_user.sh` сам определяет `XRAY_NETWORK` и генерирует
-правильную ссылку (без flow для XHTTP). Если правите `.env` вручную —
-не указывайте flow клиентам при XHTTP.
+**Решение:** TCP-ссылка использует `flow=xtls-rprx-vision`, XHTTP-ссылка
+без flow. `list_users.sh` и `add_user.sh` генерируют оба варианта.
+Если правите `.env` вручную — не указывайте flow для XHTTP-клиентов.
 
 ### 19.7. XHTTP без Reality не работает через nginx ssl_preread
 

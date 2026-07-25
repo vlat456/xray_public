@@ -114,7 +114,7 @@ print("OK")
 fi
 
 FRAG="${USERNAME:+#${USERNAME}}"
-VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
+VLESS_TCP="vless://${UUID}@${SERVER}:${PORT}?type=tcp&security=reality&flow=xtls-rprx-vision&sni=steamcommunity.com&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
 VLESS_XHTTP="vless://${UUID}@${SERVER}:${PORT}?type=xhttp&security=reality&sni=${SERVER_NAME}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}${FRAG}"
 QR_TCP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_TCP'))")
 QR_XHTTP=$(python3 -c "import urllib.parse; print('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote('$VLESS_XHTTP'))")

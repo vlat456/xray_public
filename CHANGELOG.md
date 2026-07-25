@@ -11,8 +11,9 @@
 - **INSTALL.md**: добавлены грабли 18.9–18.11 (post_check HTTPS, fwupd память, shortId diversity)
 
 ### Added
-- **xray/entrypoint.sh**: поддержка XHTTP (`XRAY_NETWORK=xhttp`), выбор transport через env
-- **docker-compose.yml**: env vars `XRAY_NETWORK`, `XRAY_XHTTP_MODE`, `XRAY_XHTTP_PATH`
+- **xray/entrypoint.sh**: dual inbound — TCP (10443) + XHTTP (10444), общие realitySettings
+- **nginx/entrypoint.sh**: маршрутизация по SNI: steamcommunity.com → TCP, остальные → XHTTP
+- **docker-compose.yml**: env vars `XRAY_XHTTP_UPSTREAM`, `XRAY_TCP_SNI`, `XRAY_XHTTP_MODE`, `XRAY_XHTTP_PATH`
 - **update.sh**: скрипт обновления — git pull, сохраняет .env/decoy/ssl, rebuild
 
 ### Fixed
