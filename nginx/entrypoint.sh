@@ -4,6 +4,7 @@ set -e
 DECOY_DOMAIN=${DECOY_DOMAIN:-example.com}
 DECOY_TITLE=${DECOY_TITLE:-Decoy Site}
 XRAY_UPSTREAM=${XRAY_UPSTREAM:-xray:10443}
+XRAY_XHTTP_UPSTREAM=${XRAY_XHTTP_UPSTREAM:-xray:10444}
 HTTP_PORT=80
 HTTPS_PORT=443
 
@@ -50,7 +51,8 @@ stream {
 
     map \$ssl_preread_server_name \$backend {
         $DECOY_DOMAIN              127.0.0.1:1443;
-        default                    $XRAY_UPSTREAM;
+        ${XRAY_TCP_SNI:-steamcommunity.com}  $XRAY_UPSTREAM;
+        default                    $XRAY_XHTTP_UPSTREAM;
     }
 
     server {
