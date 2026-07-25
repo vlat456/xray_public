@@ -76,8 +76,9 @@ short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
 sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
 def build_vless(uuid, name, server, port, transport, sni, pubkey, sid):
     frag = f'#{name}-{transport}' if name != '-' else ''
-    flow_part = '&flow=xtls-rprx-vision' if transport == 'tcp' else ''
-    return f'vless://{uuid}@{server}:{port}?type={transport}&security=reality{flow_part}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
+    if transport == 'tcp':
+        return f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&flow=xtls-rprx-vision&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
+    return f'vless://{uuid}@{server}:{port}?type=xhttp&security=reality&flow=none&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{frag}'
 
 GREEN = '\033[0;32m'
 CYAN = '\033[0;36m'
