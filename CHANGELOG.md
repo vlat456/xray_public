@@ -16,7 +16,7 @@
 - **update.sh**: скрипт обновления — git pull, сохраняет .env/decoy/ssl, rebuild
 
 ### Fixed
-- **list_users.sh**: shortId назначается round-robin, а не один на всех
+- **list_users.sh**: shortId + SNI назначаются round-robin, transport из XRAY_NETWORK
 - **post_check.sh**: HTTPS тест через `--resolve $DECOY` вместо `localhost` (ложный 400)
 - **post_check.sh**: получение публичного ключа через `docker compose exec xray`
 - **add_user.sh**: XHTTP-aware flow (без flow для xhttp)

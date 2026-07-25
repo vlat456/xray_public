@@ -70,10 +70,12 @@ if privkey and privkey != 'CHANGE_ME':
 server = env.get('DECOY_DOMAIN', 'CHANGE_ME')
 port = env.get('NGINX_HTTPS_PORT', '443')
 dest = env.get('XRAY_REALITY_DEST', 'steamcommunity.com:443')
-sni = env.get('XRAY_REALITY_SERVER_NAMES', '') or dest.split(':')[0]
+server_names = env.get('XRAY_REALITY_SERVER_NAMES', '') or dest.split(':')[0]
+sni_list = [s.strip() for s in server_names.split(',') if s.strip()]
 short_ids = env.get('XRAY_REALITY_SHORT_IDS', '')
 sid_list = [s.strip() for s in short_ids.split(',') if s.strip()] if short_ids else ['cbdc51eb']
-flow = 'xtls-rprx-vision'
+network = env.get('XRAY_NETWORK', 'tcp')
+flow = 'xtls-rprx-vision' if network == 'tcp' else ''
 
 GREEN = '\033[0;32m'
 CYAN = '\033[0;36m'
@@ -86,11 +88,12 @@ print(f'{BOLD}{GREEN}📋 Xray Clients{NC}')
 print()
 for i, (uuid, name) in enumerate(clients, 1):
     sid = sid_list[(i - 1) % len(sid_list)]
+    sni = sni_list[(i - 1) % len(sni_list)]
     print(f'  {YELLOW}👤{NC} {BOLD}{name}{NC}')
     print(f'    {CYAN}🔑{NC} UUID: {uuid}')
     if pubkey:
         fragment = f'#{name}' if name != '-' else ''
-        vless = f'vless://{uuid}@{server}:{port}?type=tcp&security=reality&flow={flow}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{fragment}'
+        vless = f'vless://{uuid}@{server}:{port}?type={network}&security=reality{flow and f"&flow={flow}" or ""}&sni={sni}&fp=chrome&pbk={pubkey}&sid={sid}{fragment}'
         qr = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + urllib.parse.quote(vless)
         print(f'    {CYAN}🔗{NC} VLESS: {vless}')
         print(f'    {CYAN}📱{NC} QR:    {qr}')
