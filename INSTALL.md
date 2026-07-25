@@ -251,7 +251,7 @@ XRAY_XHTTP_PATH=/    # path prefix
 Как работает:
 - **xray** слушает два inbounds: TCP (10443) и XHTTP (10444)
 - **nginx** по SNI направляет: `steamcommunity.com` → TCP inbound,
-  остальные SNI (`cdn.api.cloud.yandex.net`, `yastatic.net` и т.д.) → XHTTP inbound
+  остальные SNI (`cdn.api.cloud.yandex.net` и т.д.) → XHTTP inbound
 - TCP в ссылке всегда использует `sni=steamcommunity.com` (для Windows Update
   и совместимости). XHTTP — уникальный SNI из `XRAY_REALITY_SERVER_NAMES`
 
